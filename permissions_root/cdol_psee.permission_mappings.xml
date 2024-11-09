@@ -1,0 +1,9 @@
+<permission_mappings>
+	<permission name="/admin/cdol/enrollments/enrollments_dashboard.html">
+		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.pending.counts</implies>
+		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.school.forms</implies>
+		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.form.submissions</implies>
+		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.pre.submissions</implies>
+		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.student.info</implies>
+	</permission>
+</permission_mappings>

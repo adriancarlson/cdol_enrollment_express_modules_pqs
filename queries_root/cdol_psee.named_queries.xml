@@ -1,0 +1,228 @@
+<queries>
+    <query name="net.cdolinc.enrollment.school.forms" flattened="true">
+        <summary>CDOL: Enrollment Forms Per School</summary>
+        <description>Returns List of Enrollment forms avilalbe at the school. Does not include Pre-enrollment forms</description>
+        <args>
+            <arg name="curSchoolID" column="u_fb_form_sharing.share_value" required="true" description="Current School ID" default="~(curschoolid)" />
+        </args>
+        <columns>
+            <column column="u_fb_form.id" description="Form ID">form_id</column>
+            <column column="u_fb_form.form_title" description="Form Name">form_name</column>
+        </columns>
+        <sql>
+            <![CDATA[
+                SELECT DISTINCT
+                    u_fb_form.id,
+                    u_fb_form.form_title
+                FROM u_fb_form
+                INNER JOIN u_fb_form_sharing 
+                    ON u_fb_form.id = u_fb_form_sharing.form_id
+                WHERE u_fb_form.publish = 'true'
+                    AND u_fb_form.form_type = 'P'
+                    AND u_fb_form_sharing.share_type = 'school'
+                    AND (u_fb_form_sharing.share_value = :curSchoolID
+                                                    OR 
+                                                :curSchoolID = 0)
+                ORDER BY 
+                    u_fb_form.form_title
+        ]]>
+        </sql>
+    </query>
+    <query name="net.cdolinc.enrollment.pending.counts" flattened="true">
+        <summary>CDOL: Pending Pre-Enrollment Counts</summary>
+        <description>Count of Pending Pre-Enrollments</description>
+        <args>
+            <arg name="curSchoolID" column="u_p_198789_forms.pendingfirstchoiceschool" required="true" description="Current School ID" default="~(curschoolid)" />
+        </args>
+        <columns>
+            <column column="u_p_198789_forms.element_198856" description="year_id">id</column>
+            <column column="u_p_198789_forms.element_198856" description="calendar_year">prefix_name</column>
+            <column column="u_p_198789_forms.id" description="Total">count</column>
+        </columns>
+        <sql>
+            <![CDATA[
+                SELECT
+                    u_p_198789_forms.element_198856,
+                    (u_p_198789_forms.element_198856 + 1990) || '-' || (u_p_198789_forms.element_198856 + 1991) AS calendar_year,
+                    COUNT(u_p_198789_forms.id) AS total
+                FROM
+                    u_p_198789_forms
+                WHERE
+                    u_p_198789_forms.approval_status = 'Pending'
+                    AND (u_p_198789_forms.pendingfirstchoiceschool = :curSchoolID
+                                    OR 
+                                :curSchoolID = 0)
+                GROUP BY
+                    u_p_198789_forms.element_198856 
+                ORDER BY 
+                    u_p_198789_forms.element_198856 DESC
+				
+        ]]>
+        </sql>
+    </query>
+    <query name="net.cdolinc.enrollment.form.submissions" flattened="true">
+        <summary>CDOL: Submissions Per Enrollment Form</summary>
+        <description>Returns student ID and form status</description>
+        <args>
+            <arg name="curSchoolID" column="u_fb_form_response.school_id" required="true" description="Current School ID" default="~(curschoolid)" />
+            <arg name="formId" column="u_fb_form_response.u_fb_form_id" required="true" description="Enrollment Form ID"/>
+            <arg name="yearStart" column="u_fb_form_response.created_on" required="true" description="Year of Form Submission" default="0"/>
+        </args>
+        <columns>
+            <column column="u_fb_form_response.student_id" description="student_id">student_id</column>
+            <column column="u_fb_form_response.u_fb_form_id" description="u_fb_form_id">form_id</column>
+            <column column="u_fb_form.form_title" description="form_title">form_name</column>
+            <column column="u_fb_form_response.approval" description="approval_status">approval_status</column>
+            <column column="u_fb_form_response.created_on" description="created_on">created_on</column>
+            <column column="u_fb_form_response.created_by" description="created_by">created_by</column>
+            <column column="u_fb_form_response.school_id" description="school_id">school_id</column>
+            <column column="u_fb_form_response.created_on" description="calendar_year">calendar_year</column>
+
+        </columns>
+        <sql>
+            <![CDATA[
+                SELECT 
+                    student_id,
+                    u_fb_form_id,
+                    form_title,
+                    approval_status,
+                    created_on,
+                    created_by,
+                    school_id,
+                    calendar_year
+                FROM (
+                    SELECT 
+                        u_fb_form_response.student_id,
+                        u_fb_form_response.u_fb_form_id,
+                        u_fb_form.form_title,
+                        CASE 
+                            WHEN u_fb_form_response.approval = 1 THEN 'Approved'
+                            WHEN u_fb_form_response.approval = 0 THEN 'Pending'
+                            WHEN u_fb_form_response.approval = 2 THEN 'Rejected'
+                            ELSE 'Unknown'
+                        END AS approval_status,
+                        u_fb_form_response.created_on,
+                        u_fb_form_response.created_by,
+                        u_fb_form_response.school_id,
+                        EXTRACT(YEAR FROM u_fb_form_response.created_on) || '-' || (EXTRACT(YEAR FROM u_fb_form_response.created_on) + 1) AS calendar_year,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY EXTRACT(YEAR FROM u_fb_form_response.created_on), u_fb_form_response.student_id
+                            ORDER BY u_fb_form_response.created_on DESC
+                        ) AS rn
+                    FROM
+                        u_fb_form_response
+                    INNER JOIN 
+                        u_fb_form ON u_fb_form_response.u_fb_form_id = u_fb_form.id
+                    WHERE 
+                        u_fb_form_response.response_type = 'G'
+                        AND u_fb_form_response.u_fb_form_id = :formId
+                        AND (EXTRACT(YEAR FROM u_fb_form_response.created_on) = :yearStart
+                            OR :yearStart = 0)
+                        AND (u_fb_form_response.school_id = :curSchoolID
+                            OR :curSchoolID = 0)
+                ) 
+                WHERE rn = 1
+                ORDER BY student_id, calendar_year DESC
+				
+        ]]>
+        </sql>
+    </query>
+    <query name="net.cdolinc.enrollment.pre.submissions" flattened="true">
+        <summary>CDOL: Submissions from Pre-Enrollment Form</summary>
+        <description>Returns Pre-Enrollment record data</description>
+        <args>
+            <arg name="curSchoolID" column="u_p_198789_forms.pendingfirstchoiceschool" required="true" description="Current School ID" default="~(curschoolid)" />
+            <arg name="yearId" column="u_p_198789_forms.element_198856" required="true" description="Enrollment Year ID" default="~(curyearid)"/>
+        </args>
+        <columns>
+            <column column="u_p_198789_forms.element_198820" description="first_name">first_name</column>
+            <column column="u_p_198789_forms.element_198830" description="last_name">last_name</column>
+            <column column="u_p_198789_forms.element_198828" description="gender">gender</column>
+            <column column="u_p_198789_forms.element_198822" description="DOB">DOB</column>
+            <column column="u_p_198789_forms.element_198832" description="grade_level">grade_level</column>
+            <column column="u_p_198789_forms.submissiondate" description="sub_date">sub_date</column>
+            <column column="u_p_198789_forms.pendingfirstchoiceschool" description="school_name">school_name</column>
+        </columns>
+        <sql>
+            <![CDATA[
+                SELECT
+                    u_p_198789_forms.element_198820 AS first_name,
+                    u_p_198789_forms.element_198830 AS last_name,
+                    CASE
+                        WHEN TO_CHAR(u_p_198789_forms.element_198828) = 'M' THEN 'Male'
+                        WHEN TO_CHAR(u_p_198789_forms.element_198828) = 'F' THEN 'Female'
+                        ELSE TO_CHAR(u_p_198789_forms.element_198828)
+                    END AS gender,
+                    u_p_198789_forms.element_198822 AS DOB,
+                    CASE
+                        WHEN TO_CHAR(u_p_198789_forms.element_198832) = -2 THEN 'PreSchool'
+                        WHEN TO_CHAR(u_p_198789_forms.element_198832) = -1 THEN 'PreSchool'
+                        WHEN TO_CHAR(u_p_198789_forms.element_198832) = 0 THEN 'Kindergarten'
+                        ELSE TO_CHAR(u_p_198789_forms.element_198832)
+                    END AS grade_level,
+                    u_p_198789_forms.submissiondate AS sub_date,
+                    schools.name
+                FROM
+                    u_p_198789_forms
+                LEFT JOIN schools 
+                    ON u_p_198789_forms.pendingfirstchoiceschool = schools.school_number
+                WHERE
+                    u_p_198789_forms.approval_status = 'Pending'
+                    AND u_p_198789_forms.element_198856 = :yearId
+                    AND (
+                        u_p_198789_forms.pendingfirstchoiceschool = :curSchoolID
+                        OR :curSchoolID = 0
+                    )
+                ORDER BY
+                    u_p_198789_forms.submissiondate DESC
+				
+        ]]>
+        </sql>
+    </query>
+    <query name="net.cdolinc.enrollment.student.info" flattened="true">
+        <summary>CDOL: Student information to match forms</summary>
+        <description>Returns student data needed to add to forms</description>
+        <args>
+            <arg name="studentIds" column="students.id" required="true" type="array" description="Student Ids"/>
+        </args>
+        <columns>
+            <column column="students.id">student_id</column>
+            <column column="students.dcid">student_dcid</column>
+            <column column="students.student_number">student_number</column>
+            <column column="students.first_name">first_name</column>
+            <column column="students.last_name">last_name</column>
+            <column column="students.dob">dob</column>
+            <column column="students.gender">gender</column>
+            <column column="students.grade_level">grade_level</column>
+            <column column="students.sched_nextyeargrade">sched_nextyeargrade</column>
+            <column column="students.schoolid">schoolid</column>
+            <column column="schools.name">school_name</column>
+            <column column="students.next_school">next_school</column>
+            <column column="schools.name">next_school_name</column>
+        </columns>
+        <sql>
+            <![CDATA[
+				SELECT
+					students.id,
+					students.dcid,
+					students.student_number,
+					students.first_name,
+					students.last_name,
+					students.dob,
+                    students.gender,
+                    students.grade_level,
+                    students.sched_nextyeargrade,
+					students.schoolid,
+                    schools.name as school_name,
+                    students.next_school,
+                    nxtsch.name as next_school_name
+				FROM
+					students
+                LEFT JOIN schools ON students.schoolid = schools.school_number
+                LEFT JOIN schools nxtsch ON students.next_school = nxtsch.school_number
+                WHERE
+					students.id IN (:studentIds)
+			]]>
+        </sql>
+    </query>
+</queries>

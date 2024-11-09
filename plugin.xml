@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://plugin.powerschool.pearson.com" version="24.11.0.30" name="CDOL Enrollment Express Modules PQs" description="CDOL Enrollment Express Modules PQs and Data Access"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://plugin.powerschool.pearson.com plugin.xsd">
+	<autoinstall required="true">
+		<autoredeploy />
+	</autoinstall>
+	<oauth></oauth>
+	<access_request>
+		<field table="u_p_198789_forms" field="id" access="FullAccess" />
+		<field table="u_p_198789_forms" field="element_198856" access="FullAccess" />
+		<field table="u_p_198789_forms" field="pendingfirstchoiceschool" access="FullAccess" />
+		<field table="u_p_198789_forms" field="approval_status" access="FullAccess" />
+		<field table="u_fb_form" field="id" access="FullAccess" />
+		<field table="u_fb_form" field="form_title" access="FullAccess" />
+		<field table="u_fb_form" field="publish" access="FullAccess" />
+		<field table="u_fb_form" field="form_type" access="FullAccess" />
+		<field table="u_fb_form_sharing" field="form_id" access="FullAccess" />
+		<field table="u_fb_form_sharing" field="share_type" access="FullAccess" />
+		<field table="u_fb_form_sharing" field="share_value" access="FullAccess" />
+	</access_request>
+	<publisher name="Adrian Carlson">
+		<contact email="adrian-carlson@cdolinc.net" />
+	</publisher>
+</plugin>
