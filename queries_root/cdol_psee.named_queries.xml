@@ -73,6 +73,7 @@
             <column column="u_fb_form_response.u_fb_form_id" description="u_fb_form_id">form_id</column>
             <column column="u_fb_form.form_title" description="form_title">form_name</column>
             <column column="u_fb_form_response.approval" description="approval_status">approval_status</column>
+            <column column="u_fb_form_response.response_type" description="response_type">response_type</column>
             <column column="u_fb_form_response.created_on" description="created_on">created_on</column>
             <column column="u_fb_form_response.created_by" description="created_by">created_by</column>
             <column column="u_fb_form_response.school_id" description="school_id">school_id</column>
@@ -82,16 +83,6 @@
         <sql>
             <![CDATA[
                 SELECT 
-                    student_id,
-                    u_fb_form_id,
-                    form_title,
-                    approval_status,
-                    created_on,
-                    created_by,
-                    school_id,
-                    calendar_year
-                FROM (
-                    SELECT 
                         u_fb_form_response.student_id,
                         u_fb_form_response.u_fb_form_id,
                         u_fb_form.form_title,
@@ -101,28 +92,32 @@
                             WHEN u_fb_form_response.approval = 2 THEN 'Rejected'
                             ELSE 'Unknown'
                         END AS approval_status,
+                        CASE 
+                            WHEN u_fb_form_response.response_type = 'A' THEN 'Admin'
+                            WHEN u_fb_form_response.response_type = 'G' THEN 'Guardian'
+                            WHEN u_fb_form_response.response_type = 'S' THEN 'Student'
+                            WHEN u_fb_form_response.response_type = 'T' THEN 'Teacher'
+                            ELSE 'Unknown'
+                        END AS response_type,
                         u_fb_form_response.created_on,
                         u_fb_form_response.created_by,
                         u_fb_form_response.school_id,
-                        EXTRACT(YEAR FROM u_fb_form_response.created_on) || '-' || (EXTRACT(YEAR FROM u_fb_form_response.created_on) + 1) AS calendar_year,
-                        ROW_NUMBER() OVER (
-                            PARTITION BY EXTRACT(YEAR FROM u_fb_form_response.created_on), u_fb_form_response.student_id
-                            ORDER BY u_fb_form_response.created_on DESC
-                        ) AS rn
+                        EXTRACT(YEAR FROM u_fb_form_response.created_on) || '-' || (EXTRACT(YEAR FROM u_fb_form_response.created_on) + 1) AS calendar_year
                     FROM
                         u_fb_form_response
                     INNER JOIN 
                         u_fb_form ON u_fb_form_response.u_fb_form_id = u_fb_form.id
+                    INNER JOIN
+                        students ON u_fb_form_response.student_id = students.id
                     WHERE 
-                        u_fb_form_response.response_type = 'G'
-                        AND u_fb_form_response.u_fb_form_id = :formId
+                        u_fb_form_response.u_fb_form_id = :formId
                         AND (EXTRACT(YEAR FROM u_fb_form_response.created_on) = :yearStart
                             OR :yearStart = 0)
                         AND (u_fb_form_response.school_id = :curSchoolID
                             OR :curSchoolID = 0)
-                ) 
-                WHERE rn = 1
-                ORDER BY student_id, calendar_year DESC
+                        AND u_fb_form_response.id >= 0
+                ORDER BY 
+                    u_fb_form_response.student_id, calendar_year DESC
 				
         ]]>
         </sql>
