@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin xmlns="http://plugin.powerschool.pearson.com" version="24.11.0.35" name="CDOL Enrollment Express Modules PQs" description="CDOL Enrollment Express Modules PQs and Data Access"
+<plugin xmlns="http://plugin.powerschool.pearson.com" version="24.11.0.36" name="CDOL Enrollment Express Modules PQs" description="CDOL Enrollment Express Modules PQs and Data Access"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://plugin.powerschool.pearson.com plugin.xsd">
 	<autoinstall required="true">
 		<autoredeploy />

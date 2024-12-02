@@ -67,6 +67,7 @@
             <arg name="curSchoolID" column="u_fb_form_response.school_id" required="true" description="Current School ID" default="~(curschoolid)" />
             <arg name="formId" column="u_fb_form_response.u_fb_form_id" required="true" description="Enrollment Form ID"/>
             <arg name="yearStart" column="u_fb_form_response.created_on" required="true" description="Year of Form Submission" default="0"/>
+            <arg name="approvalStatus" column="u_fb_form_response.created_on" required="true" description="Filter to particular status" default="-1"/>
         </args>
         <columns>
             <column column="u_fb_form_response.student_id" description="student_id">student_id</column>
@@ -115,6 +116,8 @@
                             OR :yearStart = 0)
                         AND (u_fb_form_response.school_id = :curSchoolID
                             OR :curSchoolID = 0)
+                        AND (u_fb_form_response.approval = :approvalStatus 
+                            OR :approvalStatus = -1)
                         AND u_fb_form_response.id >= 0
                 ORDER BY 
                     u_fb_form_response.student_id, calendar_year DESC
