@@ -223,4 +223,84 @@
 			]]>
         </sql>
     </query>
+    <query name="net.cdolinc.enrollment.cookie.builder" flattened="true">
+        <summary>CDOL: Student Enrollment Cookie Builder</summary>
+        <description>Query used to build user cookie to determine if full script needs to be run</description>
+        <args>
+            <arg name="curSchoolID" column="schools.school_number" required="true" description="Current School ID" default="~(curschoolid)" />
+        </args>
+        <columns>
+            <column column="schools.school_number">school_number</column>
+            <column column="schools.school_number">most_recent_date</column>
+        </columns>
+        <sql>
+            <![CDATA[
+				WITH pre_enroll AS (
+                    SELECT
+                        u_p_198789_forms.pendingfirstchoiceschool,
+                        MAX(u_p_198789_forms.whenmodified) AS most_recent_whenmodified
+                    FROM
+                        u_p_198789_forms
+                    WHERE
+                        u_p_198789_forms.approval_status = 'Pending'
+                        AND (
+                            u_p_198789_forms.pendingfirstchoiceschool = :curSchoolID
+                            OR :curSchoolID = 0
+                        )
+                    GROUP BY
+                        u_p_198789_forms.pendingfirstchoiceschool
+                ),
+                enrollment_response AS (
+                    SELECT
+                        u_fb_form_response.school_id,
+                        MAX(u_fb_form_response.created_on) AS most_created_on
+                    FROM
+                        u_fb_form_response
+                    WHERE
+                        (
+                            u_fb_form_response.school_id = :curSchoolID
+                            OR :curSchoolID = 0
+                        )
+                        AND u_fb_form_response.approval = 0
+                        AND u_fb_form_response.id >= 0
+                    GROUP BY
+                        u_fb_form_response.school_id
+                ),
+                combined_data AS (
+                    SELECT
+                        schools.school_number,
+                        GREATEST(
+                            COALESCE(pre_enroll.most_recent_whenmodified, TO_DATE('1900-01-01', 'YYYY-MM-DD')),
+                            COALESCE(enrollment_response.most_created_on, TO_DATE('1900-01-01', 'YYYY-MM-DD'))
+                        ) AS most_recent_date
+                    FROM
+                        schools
+                    LEFT JOIN pre_enroll
+                        ON schools.school_number = pre_enroll.pendingfirstchoiceschool
+                    LEFT JOIN enrollment_response
+                        ON schools.school_number = enrollment_response.school_id
+                    WHERE
+                        (
+                            schools.school_number = :curSchoolID
+                            OR :curSchoolID = 0
+                        )
+                )
+                SELECT
+                    CASE
+                        WHEN :curSchoolID = 0 THEN 0
+                        ELSE combined_data.school_number
+                    END AS school_number,
+                    MAX(combined_data.most_recent_date) AS most_recent_date
+                FROM
+                    schools 
+                INNER JOIN (SELECT * FROM combined_data) combined_data
+                    ON schools.school_number = combined_data.school_number
+                GROUP BY
+                    CASE
+                        WHEN :curSchoolID = 0 THEN 0
+                        ELSE combined_data.school_number
+                    END
+			]]>
+        </sql>
+    </query>
 </queries>
