@@ -5,5 +5,6 @@
 		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.form.submissions</implies>
 		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.pre.submissions</implies>
 		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.student.info</implies>
+		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.school.counts</implies>
 	</permission>
 </permission_mappings>

@@ -223,4 +223,31 @@
 			]]>
         </sql>
     </query>
+    <query name="net.cdolinc.enrollment.school.counts" flattened="true">
+        <summary>CDOL: Pending Pre-Enrollment Counts from U_CDOL_ENROLLMENT_COUNTS</summary>
+        <description>Count from U_CDOL_ENROLLMENT_COUNTS</description>
+        <args>
+            <arg name="curSchoolID" column="u_cdol_enrollment_counts.schoolid" required="true" description="Current School ID" default="~(curschoolid)" />
+        </args>
+        <columns>
+            <column column="u_cdol_enrollment_counts.schoolid" description="schoolid">schoolid</column>
+            <column column="u_cdol_enrollment_counts.pending_count" description="pending_count">pending_count</column>
+            <column column="u_cdol_enrollment_counts.who_updated" description="who_updated">who_updated</column>
+            <column column="u_cdol_enrollment_counts.when_updated" description="when_updated">when_updated</column>
+        </columns>
+        <sql>
+            <![CDATA[
+                SELECT
+                    u_cdol_enrollment_counts.schoolid,
+                    u_cdol_enrollment_counts.pending_count,
+                    u_cdol_enrollment_counts.who_updated,
+                    u_cdol_enrollment_counts.when_updated
+                FROM
+                    u_cdol_enrollment_counts
+                WHERE 
+                    u_cdol_enrollment_counts.schoolid = :curSchoolID
+				
+        ]]>
+        </sql>
+    </query>
 </queries>
