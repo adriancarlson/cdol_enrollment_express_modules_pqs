@@ -7,4 +7,12 @@
 		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.student.info</implies>
 		<implies allow="post">/ws/schema/query/net.cdolinc.enrollment.school.counts</implies>
 	</permission>
+	<permission name='/admin/cdol/enrollments/enrollments_dashboard.html'>
+		<implies allow="post">/ws/schema/table/u_cdol_enrollment_counts</implies>
+		<implies allow="put">/ws/schema/table/u_cdol_enrollment_counts/#</implies>
+		<implies allow="delete">/ws/schema/table/u_cdol_enrollment_counts/#</implies>
+		<implies allow="get">/ws/schema/table/u_cdol_enrollment_counts/#</implies>
+		<implies allow="get">/ws/schema/table/u_cdol_enrollment_counts/count</implies>
+		<implies allow="get">/ws/schema/table/u_cdol_enrollment_counts</implies>
+	</permission>
 </permission_mappings>

@@ -230,6 +230,7 @@
             <arg name="curSchoolID" column="u_cdol_enrollment_counts.schoolid" required="true" description="Current School ID" default="~(curschoolid)" />
         </args>
         <columns>
+            <column column="u_cdol_enrollment_counts.id" description="id">id</column>
             <column column="u_cdol_enrollment_counts.schoolid" description="schoolid">schoolid</column>
             <column column="u_cdol_enrollment_counts.pending_count" description="pending_count">pending_count</column>
             <column column="u_cdol_enrollment_counts.who_updated" description="who_updated">who_updated</column>
@@ -238,6 +239,7 @@
         <sql>
             <![CDATA[
                 SELECT
+                u_cdol_enrollment_counts.id,
                     u_cdol_enrollment_counts.schoolid,
                     u_cdol_enrollment_counts.pending_count,
                     u_cdol_enrollment_counts.who_updated,
