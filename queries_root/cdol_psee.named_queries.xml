@@ -114,8 +114,10 @@
                         u_fb_form_response.u_fb_form_id = :formId
                         AND (EXTRACT(YEAR FROM u_fb_form_response.created_on) = :yearStart
                             OR :yearStart = 0)
-                        AND (u_fb_form_response.school_id = :curSchoolID
-                            OR :curSchoolID = 0)
+                        AND (  
+                                :curSchoolID = '0'  -- Works for all schools when '0' is passed  
+                                OR INSTR(',' || :curSchoolID || ',', ',' || u_fb_form_response.school_id || ',') > 0  
+                            )
                         AND (u_fb_form_response.approval = :approvalStatus 
                             OR :approvalStatus = -1)
                         AND u_fb_form_response.id >= 0
