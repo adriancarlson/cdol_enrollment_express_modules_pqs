@@ -199,6 +199,9 @@
             <column column="schools.name">school_name</column>
             <column column="students.next_school">next_school</column>
             <column column="schools.name">next_school_name</column>
+            <column column="u_student_enrollment_logic.psee_grade_level">psee_grade_level</column>
+            <column column="u_student_enrollment_logic.psee_school_id">psee_school_id</column>
+            <column column="u_student_enrollment_logic.psee_school_name">psee_school_name</column>
         </columns>
         <sql>
             <![CDATA[
@@ -215,11 +218,15 @@
 					students.schoolid,
                     schools.name as school_name,
                     students.next_school,
-                    nxtsch.name as next_school_name
+                    nxtsch.name as next_school_name,
+                    u_student_enrollment_logic.psee_grade_level,
+                    u_student_enrollment_logic.psee_school_id,
+                    u_student_enrollment_logic.psee_school_name
 				FROM
 					students
                 LEFT JOIN schools ON students.schoolid = schools.school_number
                 LEFT JOIN schools nxtsch ON students.next_school = nxtsch.school_number
+                LEFT JOIN u_student_enrollment_logic ON students.dcid = u_student_enrollment_logic.studentsdcid
                 WHERE
 					students.id IN (:studentIds)
 			]]>
