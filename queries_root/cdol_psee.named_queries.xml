@@ -70,6 +70,7 @@
             <arg name="approvalStatus" column="u_fb_form_response.created_on" required="true" description="Filter to particular status" default="-1"/>
         </args>
         <columns>
+            <column column="u_fb_form_response.id" description="student_id">form_response_id</column>
             <column column="u_fb_form_response.student_id" description="student_id">student_id</column>
             <column column="u_fb_form_response.u_fb_form_id" description="u_fb_form_id">form_id</column>
             <column column="u_fb_form.form_title" description="form_title">form_name</column>
@@ -84,6 +85,7 @@
         <sql>
             <![CDATA[
                 SELECT 
+                        u_fb_form_response.id,
                         u_fb_form_response.student_id,
                         u_fb_form_response.u_fb_form_id,
                         u_fb_form.form_title,
