@@ -229,8 +229,11 @@
                 LEFT JOIN schools ON students.schoolid = schools.school_number
                 LEFT JOIN schools nxtsch ON students.next_school = nxtsch.school_number
                 LEFT JOIN u_student_enrollment_logic ON students.dcid = u_student_enrollment_logic.studentsdcid
-                WHERE
-					students.id IN (:studentIds)
+                WHERE 
+                    students.enroll_status IN (-1,0)
+                    AND students.sched_nextyeargrade != 99
+                    AND students.next_school != 999999
+                    AND students.id IN (:studentIds)
 			]]>
         </sql>
     </query>
