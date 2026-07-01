@@ -157,7 +157,6 @@
                     END AS gender,
                     u_p_198789_forms.element_198822 AS DOB,
                     CASE
-                        WHEN TO_CHAR(u_p_198789_forms.element_198832) = -2 THEN 'PreSchool'
                         WHEN TO_CHAR(u_p_198789_forms.element_198832) = -1 THEN 'PreSchool'
                         WHEN TO_CHAR(u_p_198789_forms.element_198832) = 0 THEN 'Kindergarten'
                         ELSE TO_CHAR(u_p_198789_forms.element_198832)
